@@ -64,7 +64,8 @@
           <!-- info panel (populates with info from the web map) -->
           <calcite-panel heading="Finn nærmeste" data-panel-id="closest">
             
-            <calcite-block heading="Oppdrag" description="Velg oppdrag fra listen" open>
+            <calcite-block heading="Oppdrag" description="Velg oppdrag fra listen for å finne beste ressurs" open>
+              <calcite-action id="refresh-assignments" slot="control" text="Oppdatere" icon="refresh"></calcite-action>
               <calcite-progress id="assignments-progress" value="0.8" type="indeterminate" hidden></calcite-progress>              
               <calcite-list id="assignments-list" selection-mode="single"></calcite-list>
               <calcite-label>
@@ -77,6 +78,10 @@
               <calcite-progress id="workers-progress" value="0.8" type="indeterminate" hidden></calcite-progress>
               <calcite-list id="workers-list" selection-mode="single"></calcite-list>
               <calcite-button id="assign-worker-btn" icon-start="play" disabled>Tildel oppdrag</calcite-button>
+            </calcite-block>
+
+            <calcite-block id="worker-details-block" heading="Detaljer" description="Mer informasjon om valgt feltarbeider" open>
+              <div id="worker-details-content"></div>  
             </calcite-block>
 
           </calcite-panel>

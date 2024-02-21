@@ -35,6 +35,24 @@ export const div = (attributes, children) => {
   return element('div', attributes, children)
 }
 
+export const label = (caption, children) => {
+  if (children) {
+    children.unshift(caption)
+    return element('calcite-label', null, children)
+  } else {
+    return element('calcite-label', null, caption)
+  }
+}
+
+export const chip = (caption, icon) => {
+  let attr = (icon) ? {icon} : null
+  return element('calcite-chip', attr, caption)
+}
+
+export const chipGroup = (caption, chips) => {
+  return element('calcite-chip-group', {label: caption}, chips)
+}
+
 export const listItem = (id, label, description, action) => {
   let listItem = element('calcite-list-item', { label, description }, action)
   listItem.setAttribute('data-item-id', id)

@@ -6,6 +6,7 @@ import Print from '@arcgis/core/widgets/Print.js'
 import Fullscreen from "@arcgis/core/widgets/Fullscreen.js"
 import Search from "@arcgis/core/widgets/Search.js"
 import { assignWorker } from '../workers.js'
+import { refreshAssignments } from '../assignments.js'
 
 export default class ActionBar {
   constructor(view, defaultActiveWidgetId = null) {
@@ -47,6 +48,7 @@ export default class ActionBar {
 
     document.querySelector("calcite-action-bar").addEventListener("click", this.handleActionBarClick)
     document.getElementById("assign-worker-btn").addEventListener("click", assignWorker)
+    document.getElementById("refresh-assignments").addEventListener("click", refreshAssignments)
   }
 
   handleActionBarClick = ({ target }) => { // Use fat arrow function or this will point at the clicked html element

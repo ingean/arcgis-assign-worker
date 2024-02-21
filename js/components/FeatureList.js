@@ -2,13 +2,13 @@ import { listItem, action } from "../utils/html.js";
 import { zoomToFeature } from "../main.js"
 
 export default class FeatureList {
-  constructor(listId, features, title, desc, onSelect, options) {
+  constructor(listId, features, onSelect, options) {
     this.listId = listId
     this.list = document.getElementById(this.listId)
     this.features = features
     this.options = options
 
-    this.addFeaturesToList(features, title, desc, onSelect, options)
+    this.addFeaturesToList(features, onSelect, options)
   }
 
   clearList = () => {

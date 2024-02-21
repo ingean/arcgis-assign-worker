@@ -4,9 +4,10 @@ import FeatureSet from "@arcgis/core/rest/support/FeatureSet.js"
 import { toggleProgessBar } from "./utils/utils.js"
 import { ErrorAlert, WarningAlert, ConfirmationAlert } from './components/Alert.js'
 import { solveODMatrix } from './ODMatrix.js'
-import { time, distance } from "./utils/format.js"
-import { selectedAssignment } from "./assignments.js";
+import { time, distance, date } from "./utils/format.js"
+import { selectedAssignment, updateAssignment, workerStats } from "./assignments.js";
 import FeatureList from "./components/FeatureList.js";
+import { div, label, chip, chipGroup } from "./utils/html.js"
 
 
 const maxSearchDistance = 3
@@ -20,6 +21,7 @@ let workers = null
 let map = null
 let workersLayer = null
 let workersList = null
+let closestWorkersList = null
 
 export const getWorkers = async (webmap) => {
   map = webmap
@@ -116,11 +118,31 @@ export const findClosestWorkers = async () => {
 const showResultInList = (features) => {
   let workers = features.map(f => {
     let worker = getWorker(f.attributes.DestinationOID)
+    //let stats = workerStats(worker.attributes.GlobalID)
     worker.attributes.title = `${worker.attributes.Navn} (${worker.attributes.Status})`
     worker.attributes.descr = `${time(f.attributes.Total_Time)} (${distance(f.attributes.Total_Distance)})` 
     return worker
   })
-  let closestWorkersList = new FeatureList('workers-list', workers, {selectFirst: true})
+  closestWorkersList = new FeatureList('workers-list', workers, showWorkerDetails, {selectFirst: true})
+  showWorkerDetails()
+}
+
+const showWorkerDetails = () => {
+  let container = document.getElementById('worker-details-content')
+  container.innerHTML = ''
+  
+  let worker = closestWorkersList.selectedFeature()
+  let stats = workerStats(worker.attributes.GlobalID)
+  
+  let content = [ 
+    label(worker.attributes.Navn),
+    chipGroup('Statistikk', [
+      chip(`${stats.count} oppdrag`, 'system-management'),
+      chip(`${stats.totalcost} kr`, 'credits')
+    ]),
+    div('worker-details-date', `Siste oppdrag ${date(worker.attributes['Sist_Tildelt_Dato'])}`)
+  ]
+  container.appendChild(div('', content))
 }
 
 const showResultInMap = (data) => {
@@ -136,31 +158,34 @@ const getWorker = (oid) => {
 }
 
 export const assignWorker = () => {
+ 
   toggleProgessBar('workers-progress')
-  let selectedWorker = workersList.selectedFeature()
+  let worker = closestWorkersList.selectedFeature()
+  updateAssignment(worker) 
   
-  selectedWorker.attributes.Status = 'Tildelt'
-  selectedWorker.attributes['Sist_Tildelt_Dato'] =  Date.now()
+  worker.attributes.Status = 'Tildelt'
+  worker.attributes['Sist_Tildelt_Dato'] =  Date.now()
   
   const edits = {
-    updateFeatures: [selectedWorker]
+    updateFeatures: [worker]
   }
 
-  console.log(`Start assigning worker ${selectedWorker.attributes.Navn}...`)
+  console.log(`Updating status for worker ${worker.attributes.Navn}...`)
   workersLayer.applyEdits(edits)
   .then(results => {
     const confirmation = new ConfirmationAlert({
-      title: 'Feltarbeider tilordnet til oppdrag',
-      message: `${selectedWorker.attributes.Navn} er nå tildelt valgt oppdrag.`,
+      title: 'Status oppdatert for feltarbeider',
+      message: `${worker.attributes.Navn} er nå tildelt valgt oppdrag.`,
     })
+    toggleProgessBar('workers-progress')
   })
   .catch(e => {
     const error = new ErrorAlert({
-      title: 'Klarte ikke å tilordne oppdrag til feltarbeider',
-      message: `Tilordningen feilet med meldingen: ${e}`,
+      title: 'Klarte ikke å oppdatere status for feltarbeider',
+      message: `Oppdateringen feilet med meldingen: ${e}`,
     })
+    toggleProgessBar('workers-progress')
   })
-  toggleProgessBar('workers-progress')
 }
 
 export const getDestinationsToFind = () => {
